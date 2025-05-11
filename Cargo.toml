@@ -1,12 +1,16 @@
 [package]
-name = "macro-hell"
+name = "wakaran"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
 proc-macro = true
 
+[features]
+serde = [] # because we don't actually care about serde outside the generated code!
+
 [dependencies]
-proc-macro2 = "1.0.94"
-quote = "1.0.39"
-syn = { version = "2.0.99", features = ["full"] }
+yaml-rust = { version = "0.9", package = "yaml-rust2" }
+quote = "1.0.37"
+proc-macro2 = "1.0.86"
+syn = { version = "2.0", features = ["full"] }
