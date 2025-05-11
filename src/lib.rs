@@ -28,6 +28,27 @@ fn parse_include_args(input: ParseStream) -> Result<(LitStr, syn::Ident)> {
     Ok((path, table_name))
 }
 
+/// Use like
+///
+/// ```rust
+/// wakaran::include_keys! {
+///     "./loc.yml" as localization_keys
+/// }
+/// ```
+///
+/// to include key-value mappings from a YAML file
+/// as well as an enum `Language` representing available language options
+/// (which generates with `Serialize` and `Deserialize` implementations
+/// if the `serde` feature is specified)
+/// as a table in the form of nested modules
+/// with the specified name for the top-level module.
+///
+/// The YAML file is expected to be formatted in two documents
+/// (separated by a line containing nothing but `---`).
+/// The first document should contain only a list of language codes.
+/// The second document should contain arbitrarily nested maps
+/// where every leaf node is a map from every language code to a string
+/// or array of strings.
 #[proc_macro]
 pub fn include_keys(input: TokenStream) -> TokenStream {
 
@@ -152,10 +173,24 @@ fn tabulate(name: Ident2, hash: &Hash) -> TokenStream2 {
             }
         }
     } else {
-        panick!("Keys should contain either all hashes, all strings, or all arrays!")
+        panick!("Keyed values should contain either all maps, all strings, or all arrays!")
     }
 }
 
+/// Recursively localizes every key within the item. Macro arguments are of the form
+///
+/// ```rust
+/// #[wakaran::localize(path::to::table[language_expression])]
+/// ```
+///
+/// where `language_expression` is patched into the macro's output to be evaluated
+/// in the local scope, at runtime,
+/// to a variant of the `Language` enum determining
+/// the string or array value to be used.
+///
+/// Key expressions use the ad-hoc syntax `$hierarchical.keys`,
+/// where the hierarchy begins one layer *below* the top level module
+/// constituting the table itself.
 #[proc_macro_attribute]
 pub fn localize(args: TokenStream, input: TokenStream) -> TokenStream {
     let (table_path, lang_expr) = syn::parse_macro_input!(args with parse_localize_args);
@@ -163,6 +198,7 @@ pub fn localize(args: TokenStream, input: TokenStream) -> TokenStream {
     syn::parse_macro_input!(input with parse_body).into()
 }
 
+/// 
 #[proc_macro]
 pub fn localize_block(input: TokenStream) -> TokenStream {
     syn::parse_macro_input!(input with parse_localize_block)
