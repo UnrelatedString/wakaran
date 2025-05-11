@@ -1,5 +1,6 @@
 [package]
 name = "wakaran"
+description = "Silly little i18n crate that reads YAML at compile time"
 version = "0.1.0"
 edition = "2021"
 license = "MPL-2.0"
